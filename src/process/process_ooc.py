@@ -93,7 +93,6 @@ def process_ooc(
             last_pred = max(field_values, key=lambda x: x["coordinates"]["yMax"])
             formated_values = format_bbs([last_pred], format_config)
             quality_table_output[field_name] = formated_values
-        output["qualityTable"] = quality_table_output
 
         # Quantity table
         quantity_table_output = {}
@@ -114,14 +113,13 @@ def process_ooc(
                     quantity_table_output[field_name] = format_bbs(
                         line[field_name], quantity_table_fields_format[field_name]
                     )
-        output["quantityTable"] = quantity_table_output
 
         field_mapping = (
             stream1_fields_mapping
-            if "1" in output["fields"]["stream"]["value"]
+            if "1" in output["stream"]["value"]
             else stream2_fields_mapping
         )
-        timestamp = output["fields"]["date"]["value"]
+        timestamp = output["date"]["value"]
         data = quantity_table_output if quantity_table_output else quality_table_output
         for field_name, field_mapping_name in field_mapping.items():
             raw_data = data.get(field_name, {})
