@@ -1,0 +1,21 @@
+services:
+  instance:
+    network_mode: 'none'
+    build: .
+    command: python -m src.app
+    deploy:
+      resources:
+        limits:
+          cpus: 8
+          memory: 8G
+        reservations:
+          cpus: 1
+          memory: 8G
+    volumes:
+      - ./config.json:/var/www/config.json
+      - ./src:/var/www/src
+      - ./models:/var/www/models
+      - ./workspace/input:/var/www/input
+      - ./workspace/input_processed:/var/www/input_processed
+      - ./workspace/output:/var/www/output
+      - ./workspace/error:/var/www/error

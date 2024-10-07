@@ -1,0 +1,5 @@
+INPUT_FOLDER = "/var/www/input"
+PROCESSED_INPUT_FOLDER = "/var/www/input_processed"
+OUTPUT_FOLDER = "/var/www/output"
+ERROR_FOLDER = "/var/www/error"
+CONFIG_FILE = "/var/www/config.json"
