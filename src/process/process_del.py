@@ -59,7 +59,7 @@ def process_del(
     ]
     date_month = datetime.strptime(fields["date"]["value"], "%Y-%m-%d")
 
-    for line in line_items:
+    for line in processed_lines:
         day, energy, hv, volume = (
             line["day"]["value"],
             line["energy"]["value"],
@@ -69,7 +69,7 @@ def process_del(
         if day is None or energy is None or hv is None or volume is None:
             continue
 
-        date_day = date_month.replace(day=day)
+        date_day = date_month.replace(day=int(day))
         timestamp = date_day.strftime("%Y-%m-%d")
         for field_name, field_mapping_name in field_mapping.items():
             confidence = (
