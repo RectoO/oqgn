@@ -18,20 +18,6 @@ from src.types.layoutlm import (
     RawProcessedLayoutLmInput,
 )
 
-a = [
-    {
-        key: torch.stack(
-            [
-                get_torch_tensor(key, item[key])  # type: ignore
-                for item in preprocess_input_windows[i : i + batch_size]
-            ]
-        ).to(device)
-        for key in preprocess_input_windows[0].keys()
-        if key in attributes_to_vectorize
-    }
-    for i in range(0, len(preprocess_input_windows), batch_size)
-]
-
 
 def get_processed_input_tags(
     processed_input, bounding_boxes_coordinates, bounding_boxes_tags, number_of_tags

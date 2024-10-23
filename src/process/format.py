@@ -1,13 +1,13 @@
 import re
-from datetime import datetime
-from typing import List, Literal, TypedDict
+from typing import List, Literal, TypedDict, Dict, Any
 import csv
+import dateutil.parser as date_parser
 from src.process.post_process import FieldBoundingBox
 
 
 class FormatDateConfig(TypedDict):
     type: Literal["date"]
-    format: str
+    first: Literal["day", "month", "year"]
     join_str: str
 
 
@@ -53,9 +53,16 @@ def format_number(raw_text: str) -> float | None:
     return None
 
 
-def format_date(date_str: str, current_format: str, desired_format: str) -> str | None:
+def format_date(
+    date_str: str, first: Literal["day", "month", "year"], desired_format: str
+) -> str | None:
     # Parse the original date string into a datetime object
-    date_obj = datetime.strptime(date_str.replace(",", ""), current_format)
+    date_obj = date_parser.parse(
+        date_str,
+        dayfirst=True if first == "day" else False,
+        yearfirst=True if first == "year" else False,
+    )
+
     # Format the datetime object into the desired format
     return date_obj.strftime(desired_format)
 
@@ -74,14 +81,17 @@ def format_bbs_number(bbs: List[FieldBoundingBox]):
 
 
 def format_bbs_date(
-    bbs: List[FieldBoundingBox], join_str: str, current_format: str, desired_format: str
+    bbs: List[FieldBoundingBox],
+    join_str: str,
+    first: Literal["day", "month", "year"],
+    desired_format: str,
 ):
-    return format_date(get_bbs_text(bbs, join_str), current_format, desired_format)
+    return format_date(get_bbs_text(bbs, join_str), first, desired_format)
 
 
 def format_bbs(bbs: List[FieldBoundingBox], config: FormatConfig):
     if len(bbs) == 0:
-        return None
+        return {}
     all_confidence = [bb["confidence"] for bb in bbs]
     mean_confidence = sum(all_confidence) / len(all_confidence)
 
@@ -107,14 +117,12 @@ def format_bbs(bbs: List[FieldBoundingBox], config: FormatConfig):
         elif config["type"] == "date":
             return {
                 "value": format_bbs_date(
-                    bbs, config["join_str"], config["format"], "%Y-%m-%d"
+                    bbs, config["join_str"], config["first"], "%Y-%m-%d"
                 ),
                 "rawValue": raw_value,
                 "confidence": mean_confidence,
                 "ocrConfidence": mean_ocr_confidence,
             }
-        else:
-            return None
     except Exception as _e:
         return {
             "error": "Failed to format",
@@ -133,6 +141,48 @@ def get_wide_status(value, confidence):
     if confidence > 0.5:
         return "OK"
     return "OKWithErrors"
+
+
+def format_csv_output(
+    field_mapping: Dict[str, str], data: Dict[str, Dict[str, Any]], timestamp: str
+):
+    csv_data = [["TimeStamp", "TagName", "Average", "Status", "PercentageOfGoodValues"]]
+
+    for field_name, field_mapping_name in field_mapping.items():
+        field_data = data.get(field_name, {}) or {}
+        confidence = (
+            field_data.get("confidence", 0) + field_data.get("ocrConfidence", 0)
+        ) / 2
+        value = field_data.get("value", None)
+
+        csv_data.append(
+            [
+                timestamp,
+                field_mapping_name,
+                "" if value is None else value,
+                get_wide_status(value, confidence),
+                confidence,
+            ]
+        )
+
+    return csv_data
+
+
+def update_tag_default_values(csv_data, tag_default_values):
+    header = csv_data[0]
+    return [
+        header,
+        *[
+            [
+                row[0],
+                row[1],
+                tag_default_values.get(row[1], row[2]),
+                row[3],
+                row[4],
+            ]
+            for row in csv_data[1:]
+        ],
+    ]
 
 
 def csv_output(output_data: List[List[str]], output_name: str):

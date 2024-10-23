@@ -3,14 +3,14 @@ from typing import Dict, List
 from numpy import ndarray
 
 from src.ocr.main import ocr_images
-from src.process.format import FormatConfig, format_bbs, get_bbs_text, get_wide_status
+from src.process.format import FormatConfig, format_bbs, get_bbs_text, format_csv_output
 from src.process.post_process import process_extraction_page, process_table_lines
 from src.skwiz.models import extract_page
 from src.types.ocr import PageInfo
 
 fields_format: Dict[str, FormatConfig] = {
     "stream": {"type": "text", "join_str": " "},
-    "date": {"type": "date", "format": "%d/%m/%Y", "join_str": ""},
+    "date": {"type": "date", "first": "day", "join_str": ""},
 }
 
 quantity_table_fields_format: Dict[str, FormatConfig] = {
@@ -50,9 +50,8 @@ def process_ooc(
     if len(images) != 4:
         raise ValueError("Expected 4 page for OOC classification")
 
-    csv_output = [
-        ["TimeStamp", "TagName", "Average", "Status", "PercentageOfGoodValues"]
-    ]
+    csv_output = format_csv_output({}, {}, "")
+
     for image_index, image in enumerate(images):
         if image_index == 0:
             image_ocr = page_ocr
@@ -114,28 +113,52 @@ def process_ooc(
                         line[field_name], quantity_table_fields_format[field_name]
                     )
 
-        field_mapping = (
+        stream_value = output.get("stream", {}).get("value", None)
+        if stream_value is None:
+            raise ValueError(f"No stream found for OOC at page {image_index + 1}")
+
+        stream_field_mapping = (
             stream1_fields_mapping
             if "1" in output["stream"]["value"]
             else stream2_fields_mapping
         )
-        timestamp = output["date"]["value"]
-        data = quantity_table_output if quantity_table_output else quality_table_output
-        for field_name, field_mapping_name in field_mapping.items():
-            raw_data = data.get(field_name, {})
-            if not raw_data:
-                continue
-            confidence = (raw_data["confidence"] + raw_data["ocrConfidence"]) / 2
-            value = raw_data["value"]
 
-            csv_output.append(
-                [
-                    timestamp,
-                    field_mapping_name,
-                    value,
-                    get_wide_status(value, confidence),
-                    confidence,
-                ]
-            )
+        timestamp = output.get("date", {}).get("value", None)
+        if timestamp is None:
+            raise ValueError(f"No timestamp found for OOC at page {image_index + 1}")
+
+        data = quantity_table_output if quantity_table_output else quality_table_output
+        table_data_key = (
+            quantity_table_fields_format.keys()
+            if quantity_table_output
+            else quality_table_fields_format.keys()
+        )
+        field_mapping = {
+            key: value
+            for key, value in stream_field_mapping.items()
+            if key in table_data_key
+        }
+        page_csv_output = format_csv_output(field_mapping, data, timestamp)
+        csv_output = csv_output + page_csv_output[1:]
+
+        # timestamp = output["date"]["value"]
+        #
+
+        # for field_name, field_mapping_name in field_mapping.items():
+        #     raw_data = data.get(field_name, {})
+        #     if not raw_data:
+        #         continue
+        #     confidence = (raw_data["confidence"] + raw_data["ocrConfidence"]) / 2
+        #     value = raw_data["value"]
+
+        #     csv_output.append(
+        #         [
+        #             timestamp,
+        #             field_mapping_name,
+        #             value,
+        #             get_wide_status(value, confidence),
+        #             confidence,
+        #         ]
+        #     )
 
     return csv_output

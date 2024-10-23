@@ -10,6 +10,7 @@ from src.constants import (
     INPUT_FOLDER,
     OUTPUT_FOLDER,
     PROCESSED_INPUT_FOLDER,
+    TAG_DEFAULT_VALUES_FILE,
 )
 from src.process.format import csv_output
 from src.process.main import process_file
@@ -37,6 +38,9 @@ def wait_for_file_completion(file_path, check_interval=1, max_attempts=10):
 with open(CONFIG_FILE, "r", encoding="utf-8") as f:
     config = json.load(f)
 
+with open(TAG_DEFAULT_VALUES_FILE, "r", encoding="utf-8") as f:
+    tag_default_values = json.load(f)
+
 
 def main():
     # Start fresh observer instance
@@ -60,7 +64,7 @@ def main():
 
             if wait_for_file_completion(first_added_file_path):
                 try:
-                    response = process_file(file_path, config)
+                    response = process_file(file_path, config, tag_default_values)
 
                     # Save response
                     response_output_path = os.path.join(

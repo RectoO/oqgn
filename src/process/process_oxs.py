@@ -1,7 +1,7 @@
 from typing import Dict, List
 from numpy import ndarray
 
-from src.process.format import FormatConfig, format_bbs, get_wide_status
+from src.process.format import FormatConfig, format_bbs, format_csv_output
 from src.process.post_process import process_extraction_page
 from src.skwiz.models import extract_page
 from src.types.ocr import PageInfo
@@ -9,7 +9,7 @@ from src.types.ocr import PageInfo
 
 fields_format: Dict[str, FormatConfig] = {
     "name": {"type": "text", "join_str": " "},
-    "date": {"type": "date", "format": "%y/%m/%d", "join_str": ""},
+    "date": {"type": "date", "first": "year", "join_str": ""},
     "gross": {"type": "number"},
     "net": {"type": "number"},
     "mass": {"type": "number"},
@@ -32,7 +32,7 @@ fields_format: Dict[str, FormatConfig] = {
 }
 
 
-def process_occidental(
+def process_oxs(
     images: List[ndarray], page_ocr: PageInfo, field_mapping: Dict[str, str]
 ):
     extracted_page = extract_page("extractor-oqgn", images[0], page_ocr)
@@ -50,25 +50,8 @@ def process_occidental(
         formated_value = format_bbs(field_value, format_config)
         output[field_name] = formated_value
 
-    csv_output = [
-        ["TimeStamp", "TagName", "Average", "Status", "PercentageOfGoodValues"]
-    ]
+    timestamp = output.get("date", {}).get("value", None)
+    if timestamp is None:
+        raise ValueError("No timestamp found for OXS")
 
-    timestamp = output["date"]["value"]
-    for field_name, field_mapping_name in field_mapping.items():
-        confidence = (
-            output[field_name]["confidence"] + output[field_name]["ocrConfidence"]
-        ) / 2
-        value = output[field_name]["value"]
-
-        csv_output.append(
-            [
-                timestamp,
-                field_mapping_name,
-                value,
-                get_wide_status(value, confidence),
-                confidence,
-            ]
-        )
-
-    return csv_output
+    return format_csv_output(field_mapping, output, timestamp)

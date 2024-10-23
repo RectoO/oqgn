@@ -2,13 +2,13 @@ from typing import Dict, List
 from datetime import datetime
 from numpy import ndarray
 
-from src.process.format import FormatConfig, format_bbs, get_wide_status
+from src.process.format import FormatConfig, format_bbs, format_csv_output
 from src.process.post_process import process_extraction_page, process_table_lines
 from src.skwiz.models import extract_page
 from src.types.ocr import PageInfo
 
 fields_format: Dict[str, FormatConfig] = {
-    "date": {"type": "date", "format": "%B %Y", "join_str": " "},
+    "date": {"type": "date", "first": "month", "join_str": " "},
 }
 
 line_items_fields_format: Dict[str, FormatConfig] = {
@@ -24,6 +24,8 @@ def process_del(
 ):
     if len(images) != 1:
         raise ValueError("Expected 1 page for DEL classification")
+
+    csv_output = format_csv_output({}, {}, "")
 
     extracted_page = extract_page("extractor-oqgn-tables-del", images[0], page_ocr)
     response = process_extraction_page(
@@ -54,12 +56,12 @@ def process_del(
             line_response[field_name] = formated_value
         processed_lines.append(line_response)
 
-    csv_output = [
-        ["TimeStamp", "TagName", "Average", "Status", "PercentageOfGoodValues"]
-    ]
-    date_month = datetime.strptime(fields["date"]["value"], "%Y-%m-%d")
+    base_date = fields.get("date", {}).get("value", None)
+    if base_date is None:
+        raise ValueError("No date found for DEL")
 
-    print(processed_lines)
+    date_month = datetime.strptime(base_date, "%Y-%m-%d")
+
     for line in processed_lines:
         day, energy, hv, volume = (
             line["day"],
@@ -67,43 +69,21 @@ def process_del(
             line["hv"],
             line["volume"],
         )
-        if day is None or energy is None or hv is None or volume is None:
+
+        # Skip lines with missing day value
+        day_int = None
+        try:
+            day_int = int(day.get("value", ""))
+        except ValueError:
             continue
 
-        date_day = date_month.replace(day=int(day["value"]))
+        # Skip lines with missing energy, hv and volume values
+        if energy is None and hv is None and volume is None:
+            continue
+
+        date_day = date_month.replace(day=day_int)
         timestamp = date_day.strftime("%Y-%m-%d")
-        for field_name, field_mapping_name in field_mapping.items():
-            confidence = (
-                line[field_name]["confidence"] + line[field_name]["ocrConfidence"]
-            ) / 2
-            value = line[field_name]["value"]
+        line_csv_output = format_csv_output(field_mapping, line, timestamp)
+        csv_output = csv_output + line_csv_output[1:]
 
-            csv_output.append(
-                [
-                    timestamp,
-                    field_mapping_name,
-                    value,
-                    get_wide_status(value, confidence),
-                    confidence,
-                ]
-            )
     return csv_output
-    # return {
-    #     "fields": {
-    #         field_name: format_bbs(field_value, fields_format[field_name])
-    #         for field_name, field_value in response["fields"].items()
-    #     },
-    #     "rawLinesItems": response["tables"]["lineItems"],
-    #     "processedLinesItems": line_items,
-    #     "lineItems": processed_lines,
-    # }
-    # output = {}
-    # for field_name, field_value in response["fields"].items():
-    #     format_config = fields_format[field_name]
-    #     formated_value = format_bbs(field_value, format_config)
-    #     output[field_name] = formated_value
-
-    # for field_name, field_values in response["tables"]["lineItems"].items():
-    #     format_config = line_items_fields_format[field_name]
-    #     formated_values = [format_bbs(v, format_config) for v in field_values]
-    #     output[field_name] = formated_values

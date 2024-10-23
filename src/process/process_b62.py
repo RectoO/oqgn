@@ -2,7 +2,11 @@ from typing import Dict, List
 
 from numpy import ndarray
 from src.ocr.main import ocr_images
-from src.process.format import FormatConfig, format_bbs, get_wide_status
+from src.process.format import (
+    FormatConfig,
+    format_bbs,
+    format_csv_output,
+)
 from src.process.post_process import process_extraction_page
 from src.skwiz.models import extract_page
 
@@ -30,7 +34,7 @@ left_fields_format: Dict[str, FormatConfig] = {
 }
 
 right_fields_format: Dict[str, FormatConfig] = {
-    "date": {"type": "date", "format": "%m/%d/%Y", "join_str": ""},
+    "date": {"type": "date", "first": "month", "join_str": ""},
     "gross": {"type": "number"},
     "net": {"type": "number"},
     "mass": {"type": "number"},
@@ -106,28 +110,11 @@ def process_b62(
         formated_value = format_bbs(field_value, format_config)
         right_output[field_name] = formated_value
 
-    csv_output = [
-        ["TimeStamp", "TagName", "Average", "Status", "PercentageOfGoodValues"]
-    ]
-    timestamp = right_output["date"]["value"]
-    for [output, fc_fields_mapping] in [
-        (left_output, fc1_fields_mapping),
-        (right_output, fc2_fields_mapping),
-    ]:
-        for field_name, field_mapping_name in fc_fields_mapping.items():
-            confidence = (
-                output[field_name]["confidence"] + output[field_name]["ocrConfidence"]
-            ) / 2
-            value = output[field_name]["value"]
+    timestamp = right_output.get("date", {}).get("value", None)
+    if timestamp is None:
+        raise ValueError("No timestamp found for B62")
 
-            csv_output.append(
-                [
-                    timestamp,
-                    field_mapping_name,
-                    value,
-                    get_wide_status(value, confidence),
-                    confidence,
-                ]
-            )
+    left_csv_output = format_csv_output(fc1_fields_mapping, left_output, timestamp)
+    right_csv_output = format_csv_output(fc2_fields_mapping, right_output, timestamp)
 
-    return csv_output
+    return left_csv_output + right_csv_output[1:]

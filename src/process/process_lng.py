@@ -3,7 +3,7 @@ from typing import Dict, List
 from numpy import ndarray
 
 from src.ocr.main import ocr_images
-from src.process.format import FormatConfig, format_bbs, get_wide_status
+from src.process.format import FormatConfig, format_bbs, format_csv_output
 from src.process.post_process import (
     process_classification_page,
     process_extraction_page,
@@ -14,7 +14,7 @@ from src.types.ocr import PageInfo
 
 fields_format: Dict[str, FormatConfig] = {
     "name": {"type": "text", "join_str": " "},
-    "date": {"type": "date", "format": "%d %b %Y", "join_str": " "},
+    "date": {"type": "date", "first": "day", "join_str": " "},
     "net": {"type": "number"},
     "mass": {"type": "number"},
     "energy": {"type": "number"},
@@ -26,9 +26,8 @@ fields_format: Dict[str, FormatConfig] = {
 def process_lng(
     images: List[ndarray], page_ocr: PageInfo, field_mapping: Dict[str, str]
 ):
-    csv_output = [
-        ["TimeStamp", "TagName", "Average", "Status", "PercentageOfGoodValues"]
-    ]
+    csv_output = format_csv_output({}, {}, "")
+
     for image_index, image in enumerate(images):
         if image_index == 0:
             image_ocr = page_ocr
@@ -61,21 +60,11 @@ def process_lng(
             formated_value = format_bbs(field_value, format_config)
             output[field_name] = formated_value
 
-        timestamp = output["date"]["value"]
-        for field_name, field_mapping_name in field_mapping.items():
-            confidence = (
-                output[field_name]["confidence"] + output[field_name]["ocrConfidence"]
-            ) / 2
-            value = output[field_name]["value"]
+        timestamp = output.get("date", {}).get("value", None)
+        if timestamp is None:
+            raise ValueError(f"No timestamp found for LNG at page {image_index + 1}")
 
-            csv_output.append(
-                [
-                    timestamp,
-                    field_mapping_name,
-                    value,
-                    get_wide_status(value, confidence),
-                    confidence,
-                ]
-            )
+        page_csv_output = format_csv_output(field_mapping, output, timestamp)
+        csv_output = csv_output + page_csv_output[1:]
 
     return csv_output
