@@ -36,7 +36,7 @@ def process_bpk(
     images: List[ndarray], page_ocr: PageInfo, field_mapping: Dict[str, str]
 ):
     if len(images) != 1:
-        raise ValueError("Expected 1 page for BP classification")
+        raise ValueError("Expected 1 page for BPK classification")
 
     extracted_page = extract_page("extractor-oqgn", images[0], page_ocr)
     response = process_extraction_page(

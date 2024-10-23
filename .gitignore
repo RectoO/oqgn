@@ -1,0 +1,19 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.pyc
+**/*.pyc
+*$py.class
+
+
+workspace/error/*
+!workspace/error/.gitkeep
+workspace/input/*
+!workspace/input/.gitkeep
+workspace/input_processed/*
+!workspace/input_processed/.gitkeep
+workspace/output/*
+!workspace/output/.gitkeep
+workspace2/
+models
+

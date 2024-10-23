@@ -1,8 +1,0 @@
-Traceback (most recent call last):
-  File "/var/www/src/app.py", line 63, in main
-    response = process_file(file_path, config)
-  File "/var/www/src/process/main.py", line 69, in process_file
-    response = process_ooc(
-  File "/var/www/src/process/process_ooc.py", line 121, in process_ooc
-    if "1" in output["fields"]["stream"]["value"]
-KeyError: 'fields'
