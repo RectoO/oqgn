@@ -17,15 +17,15 @@ RUN mkdir $HUGGINGFACE_CACHE_DIR
 # Install
 RUN apt-get update && \
     apt-get install -y \
-        libmagic1 \
-        build-essential \
-        cmake \
-        libopenblas-dev \
-        libblas-dev \
-        liblapack-dev \
-        pkg-config \
-        libhdf5-dev \
-        poppler-utils ffmpeg libsm6 libxext6 && \
+    libmagic1 \
+    build-essential \
+    cmake \
+    libopenblas-dev \
+    libblas-dev \
+    liblapack-dev \
+    pkg-config \
+    libhdf5-dev \
+    poppler-utils ffmpeg libsm6 libxext6 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -41,7 +41,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application code
 COPY ./config.json /var/www/config.json
 COPY ./src /var/www/src
-COPY ./models /var/www/models
+RUN mkdir /var/www/models
+COPY ./models/ocr /var/www/models/ocr
+RUN mkdir /var/www/models/skwiz
 
 RUN python -m src.skwiz.download_base_layoutlm_models
 RUN chmod -R 0777 $HUGGINGFACE_CACHE_DIR

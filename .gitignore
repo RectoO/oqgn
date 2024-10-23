@@ -5,6 +5,7 @@ __pycache__/
 **/*.pyc
 *$py.class
 
+models
 
 workspace/error/*
 !workspace/error/.gitkeep
@@ -15,5 +16,5 @@ workspace/input_processed/*
 workspace/output/*
 !workspace/output/.gitkeep
 workspace2/
-models
+
 

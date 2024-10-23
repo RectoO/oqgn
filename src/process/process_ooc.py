@@ -118,9 +118,7 @@ def process_ooc(
             raise ValueError(f"No stream found for OOC at page {image_index + 1}")
 
         stream_field_mapping = (
-            stream1_fields_mapping
-            if "1" in output["stream"]["value"]
-            else stream2_fields_mapping
+            stream1_fields_mapping if "1" in stream_value else stream2_fields_mapping
         )
 
         timestamp = output.get("date", {}).get("value", None)
@@ -140,25 +138,5 @@ def process_ooc(
         }
         page_csv_output = format_csv_output(field_mapping, data, timestamp)
         csv_output = csv_output + page_csv_output[1:]
-
-        # timestamp = output["date"]["value"]
-        #
-
-        # for field_name, field_mapping_name in field_mapping.items():
-        #     raw_data = data.get(field_name, {})
-        #     if not raw_data:
-        #         continue
-        #     confidence = (raw_data["confidence"] + raw_data["ocrConfidence"]) / 2
-        #     value = raw_data["value"]
-
-        #     csv_output.append(
-        #         [
-        #             timestamp,
-        #             field_mapping_name,
-        #             value,
-        #             get_wide_status(value, confidence),
-        #             confidence,
-        #         ]
-        #     )
 
     return csv_output

@@ -61,7 +61,12 @@ def process_file(file_path: str, config, tag_default_values):
     elif classification == "BPK":
         response = process_bpk(images, first_page_ocr, config["mapping"]["BPK"])
     elif classification == "OXS":
-        response = process_oxs(images, first_page_ocr, config["mapping"]["OXS"])
+        response = process_oxs(
+            images,
+            first_page_ocr,
+            config["mapping"]["OXS"]["stream1"],
+            config["mapping"]["OXS"]["stream2"],
+        )
     elif classification == "LNG":
         response = process_lng(images, first_page_ocr, config["mapping"]["LNG"])
     elif classification == "DEL":
