@@ -173,13 +173,17 @@ def update_tag_default_values(csv_data, tag_default_values):
     return [
         header,
         *[
-            [
-                row[0],
-                row[1],
-                tag_default_values.get(row[1], row[2]),
-                row[3],
-                row[4],
-            ]
+            (
+                [
+                    row[0],
+                    row[1],
+                    tag_default_values.get(row[1], row[2]),
+                    row[3],
+                    row[4],
+                ]
+                if row[3] == "NoData"
+                else row
+            )
             for row in csv_data[1:]
         ],
     ]
