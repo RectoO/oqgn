@@ -35,10 +35,14 @@ class LayoutLMv3AndFeaturesClassification(torch.nn.Module):
 
         for key, labels in extraction_label2id.items():
             self.num_labels[key] = len(labels)
+            # TODO in the future no more featur eengineering + handle page/window tag
+            ocr_tags = config.get("featureEngineering") or config.get(
+                "tagging", {}
+            ).get("ocrTags", [])
             self.classifier[key] = LayoutLMv3AndFeaturesHeadClassification(
                 config=layoutlm_config,
                 num_labels=self.num_labels[key],
-                n_tags=len(config.get("featureEngineering") or []),
+                n_tags=len(ocr_tags),
             )
 
         self.doc_classifier = torch.nn.ModuleDict()
