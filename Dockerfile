@@ -17,6 +17,9 @@ RUN mkdir $HUGGINGFACE_CACHE_DIR
 # Install
 RUN apt-get update && \
     apt-get install -y \
+    tesseract-ocr \
+    libtesseract-dev \
+    libleptonica-dev \
     libmagic1 \
     build-essential \
     cmake \

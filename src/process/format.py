@@ -146,13 +146,14 @@ def get_wide_status(value, confidence):
 def format_csv_output(
     field_mapping: Dict[str, str], data: Dict[str, Dict[str, Any]], timestamp: str
 ):
-    csv_data = [["TimeStamp", "TagName", "Average", "Status", "PercentageOfGoodValues"]]
+    csv_data = [["TimeStamp", "TagName", "Average", "Status", "PercentageOfGoodValues", "ocrConfidence", "confidence"]]
 
     for field_name, field_mapping_name in field_mapping.items():
         field_data = data.get(field_name, {}) or {}
-        confidence = (
-            field_data.get("confidence", 0) + field_data.get("ocrConfidence", 0)
-        ) / 2
+        confidence = min(
+            field_data.get("confidence", 0),
+            field_data.get("ocrConfidence", 0),
+        )
         value = field_data.get("value", None)
 
         csv_data.append(
@@ -162,6 +163,8 @@ def format_csv_output(
                 "" if value is None else value,
                 get_wide_status(value, confidence),
                 confidence,
+                field_data.get("ocrConfidence", 0),
+                field_data.get("confidence", 0),
             ]
         )
 

@@ -75,6 +75,10 @@ def process_del(
         try:
             day_int = int(day.get("value", ""))
         except ValueError:
+            print(f"Error processing line: {line}", flush=True)
+            continue
+        except TypeError:
+            print(f"Error processing line: {line}", flush=True)
             continue
 
         # Skip lines with missing energy, hv and volume values

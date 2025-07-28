@@ -25,7 +25,9 @@ def process_classification_page(classification: InferencePageClassification):
     )
 
     # Get the top prediction
-    top_prediction = get_max_key(raw_predictions)
+    top_prediction, score = get_max_key_value(raw_predictions)
+
+    print(f"Classification: {top_prediction}, score: {score}", flush=True)
 
     if top_prediction == "None":
         return None

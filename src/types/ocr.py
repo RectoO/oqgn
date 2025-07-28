@@ -1,5 +1,23 @@
-from typing import TypedDict, List
+from typing import Optional, TypedDict, List
 
+
+class Tags(TypedDict):
+    number: Optional[bool]
+    email: Optional[bool]
+    url: Optional[bool]
+    percentageSymbol: Optional[bool]
+    vatB: Optional[bool]
+    vatI: Optional[bool]
+    ibanB: Optional[bool]
+    ibanI: Optional[bool]
+    dateB: Optional[bool]
+    dateI: Optional[bool]
+    phoneNumberB: Optional[bool]
+    phoneNumberI: Optional[bool]
+    currencyB: Optional[bool]
+    currencyI: Optional[bool]
+    amount: Optional[bool]
+    percentage: Optional[bool]
 
 class BoundingBoxCoordinates(TypedDict):
     xMax: float
@@ -12,6 +30,7 @@ class BoundingBox(TypedDict):
     confidence: float
     id: str
     coordinates: BoundingBoxCoordinates
+    tags: Tags
     text: str
     blockNumber: int
     lineNumber: int

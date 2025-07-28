@@ -1,14 +1,13 @@
 from typing import List
 from numpy import ndarray
 import torch
-from doctr.models import ocr_predictor, db_resnet50, crnn_vgg16_bn
+from doctr.models import ocr_predictor, fast_base, crnn_vgg16_bn
 from doctr.io import DocumentFile
 from src.types.ocr import Ocr, PageInfo, BoundingBox
 
-det_model = db_resnet50(pretrained=False, pretrained_backbone=False)
-det_params = torch.load(
-    "/var/www/models/ocr/db_resnet50-79bd7d70.pt", map_location="cpu"
-)
+
+det_model = fast_base(pretrained=False, pretrained_backbone=False)
+det_params = torch.load("/var/www/models/ocr/fast_base-688a8b34.pt", map_location="cpu")
 det_model.load_state_dict(det_params)
 
 reco_model = crnn_vgg16_bn(pretrained=False, pretrained_backbone=False)
@@ -20,11 +19,12 @@ reco_model.load_state_dict(reco_params)
 model = ocr_predictor(
     det_arch=det_model,
     reco_arch=reco_model,
-    detect_language=True,
-    # detect_orientation=True,
     pretrained=False,
+    assume_straight_pages=True,
+    preserve_aspect_ratio=True,
+    detect_orientation=False,
+    # detect_language=True,
 )
-
 
 def transform_doctr_ocr(doctr_ocr) -> Ocr:
     def generate_bounding_box_id(page_number, coordinates):
@@ -63,6 +63,24 @@ def transform_doctr_ocr(doctr_ocr) -> Ocr:
                                 "yMax": y_max,
                             },
                         ),
+                        "tags": {
+                            "number": False,
+                            "email": False,
+                            "url": False,
+                            "percentageSymbol": False,
+                            "vatB": False,
+                            "vatI": False,
+                            "ibanB": False,
+                            "ibanI": False,
+                            "dateB": False,
+                            "dateI": False,
+                            "phoneNumberB": False,
+                            "phoneNumberI": False,
+                            "currencyB": False,
+                            "currencyI": False,
+                            "amount": False,
+                            "percentage": False,
+                        },
                         "coordinates": {
                             "xMin": x_min,
                             "yMin": y_min,

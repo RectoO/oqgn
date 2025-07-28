@@ -24,7 +24,7 @@ class LayoutLMv3AndFeaturesClassification(torch.nn.Module):
     ):
         super().__init__()
         layoutlm_base_config = deepcopy(
-            {**DEFAULT_LAYOUTLM_CONFIG, **(config.get("layoutlmv3") or {})}
+            {**DEFAULT_LAYOUTLM_CONFIG, **(config.get("layoutlm", {}).get('architectureConfig', {}) or {})}
         )
 
         layoutlm_config = LayoutLMv3Config(**layoutlm_base_config)
@@ -35,10 +35,7 @@ class LayoutLMv3AndFeaturesClassification(torch.nn.Module):
 
         for key, labels in extraction_label2id.items():
             self.num_labels[key] = len(labels)
-            # TODO in the future no more featur eengineering + handle page/window tag
-            ocr_tags = config.get("featureEngineering") or config.get(
-                "tagging", {}
-            ).get("ocrTags", [])
+            ocr_tags = config.get('tagging', {}).get('ocrTags', [])
             self.classifier[key] = LayoutLMv3AndFeaturesHeadClassification(
                 config=layoutlm_config,
                 num_labels=self.num_labels[key],
@@ -106,4 +103,5 @@ class LayoutLMv3AndFeaturesClassification(torch.nn.Module):
         return (
             {key: logit for key, logit in logits.items()},
             {key: logit for key, logit in doc_logits.items()},
+            outputs[0]
         )

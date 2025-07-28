@@ -1,4 +1,22 @@
-DEFAULT_LAYOUTLM_CONFIG = {
+from src.types.training import LayoutLMArchitectureSchema
+from typing import Dict, Any, List, TypedDict
+
+
+# Extended type that allows additional fields beyond LayoutLMArchitectureSchema
+class ExtendedLayoutLMConfig(LayoutLMArchitectureSchema, total=False):
+    _name_or_path: str
+    architectures: List[str]
+    bos_token_id: int
+    eos_token_id: int
+    pad_token_id: int
+    second_input_size: int
+    text_embed: bool
+    torch_dtype: str
+    transformers_version: str
+    model_type: str
+
+
+DEFAULT_LAYOUTLM_CONFIG: ExtendedLayoutLMConfig = {
     "_name_or_path": "microsoft/layoutlmv3-base",
     "architectures": ["LayoutLMv3ForTokenClassification"],
     "attention_probs_dropout_prob": 0.1,
