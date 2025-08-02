@@ -32,7 +32,12 @@ def main():
     # Start fresh observer instance
     print("Watching for new files...", flush=True)
     while True:
-        files = os.listdir(INPUT_FOLDER)
+        files = [
+            f
+            for f in os.listdir(INPUT_FOLDER)
+            if os.path.isfile(os.path.join(INPUT_FOLDER, f))
+        ]
+        # files = os.listdir(INPUT_FOLDER)
         if files:
             files_with_time = [
                 (f, os.path.getatime(os.path.join(INPUT_FOLDER, f))) for f in files
