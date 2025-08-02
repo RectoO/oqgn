@@ -31,8 +31,8 @@ def process_file(file_path: str, file_name: str):
     # Save response
     csv_output_tmp_move(file_name, classification, date, extracted_data)
 
-    # DEBUG TODO REMOVE
-    shutil.copy(file_path, os.path.join(PROCESSED_INPUT_FOLDER, file_name))
+    # DEBUG ONLY
+    # shutil.copy(file_path, os.path.join(PROCESSED_INPUT_FOLDER, file_name))
 
     # Clean up
     date_year = date.split('-')[0]
