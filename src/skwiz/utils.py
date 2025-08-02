@@ -1,10 +1,10 @@
-from src.types.box_classifier import ProcessedBoxClassifierInput, TorchProcessedBoxClassifierInput
 import torch
 from typing import List, Any, Tuple, Dict, cast
 import numpy as np
 from PIL import Image
 from transformers import AutoProcessor  # type: ignore[import-untyped]
 
+from src.types.box_classifier import ProcessedBoxClassifierInput, TorchProcessedBoxClassifierInput
 from src.skwiz.bounding_boxes import normalise_ocr_bounding_box
 from src.skwiz.constants import NONE_LABEL
 from src.skwiz.layoutlm.layoutlmv3_and_features_classification import (

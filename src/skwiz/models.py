@@ -1,21 +1,19 @@
-from numpy import ndarray
-from src.skwiz.box_classifier.gru import GRUBoxClassifier
-from src.skwiz.box_classifier.lstm import LSTMBoxClassifier
-from src.skwiz.layoutlm.default_layoutlm_config import DEFAULT_LAYOUTLM_CONFIG
 import torch
 import os
 import json
 import pickle
 import safetensors.torch
 from PIL import Image
-from typing import Any, Dict, List, Literal
+from typing import  List
 from transformers import AutoProcessor  # type: ignore[import-untyped]
 
+from src.skwiz.box_classifier.gru import GRUBoxClassifier
+from src.skwiz.box_classifier.lstm import LSTMBoxClassifier
+from src.skwiz.layoutlm.default_layoutlm_config import DEFAULT_LAYOUTLM_CONFIG
 from src.skwiz.layoutlm.layoutlmv3_and_features_classification import (
     LayoutLMv3AndFeaturesClassification,
 )
 from src.skwiz.constants import AUTO_PROCESSOR_LOCAL_PATH
-
 from src.skwiz.utils import (
     box_classifier_post_processing,
     get_box_classifier_inference_batches,
@@ -31,11 +29,11 @@ from src.skwiz.utils import (
 from src.types.inference import (
     InferenceBoundingBox,
     InferenceOutput,
-    InferencePageClassification,
 )
-from src.types.ocr import Ocr, PageInfo
+from src.types.ocr import Ocr
 from src.types.training import TrainingConfig, TrainingType
 from src.types.layoutlm import ProcessedLayoutLMInput
+
 
 MODEL_FOLDER = "/var/www/models/skwiz"
 
@@ -246,86 +244,3 @@ def predict_with_model(
         "boundingBoxes": box_classifier_output,
         "classification": classification_prediction_pages,
     }
-
-
-ClassifierModelType = Literal[
-    "classifier-lng",
-    "classifier-oqgn",
-]
-ExtractorModelType = Literal[
-    "extractor-oqgn",
-    "extractor-oqgn-tables-del",
-]
-classifier_models: Dict[ClassifierModelType, Any] = {
-    "classifier-lng": get_model("classifier-lng"),
-    "classifier-oqgn": get_model("classifier-oqgn"),
-}
-
-extractor_models: Dict[ExtractorModelType, Any] = {
-    "extractor-oqgn": get_model("extractor-oqgn"),
-    "extractor-oqgn-tables-del": get_model("extractor-oqgn-tables-del"),
-}
-
-
-
-def classify_page(
-    model_name: ClassifierModelType, image: ndarray, page_ocr: PageInfo
-) -> InferencePageClassification:
-    (
-        _box_classifier_model,
-        layoutlm_model,
-        processor,
-        training_config,
-        extraction_id2label,
-        classification_id2label,
-    ) = classifier_models[model_name]
-
-    results = predict_with_model(
-        layoutlm_model,
-        processor,
-        training_config,
-        extraction_id2label,
-        classification_id2label,
-        [Image.fromarray(image)],
-        {"pages": [page_ocr]},
-    )
-
-    return results["classification"][0]
-
-    # return [process_classification_page(classification) for classification in classif]
-
-
-def extract_page(
-    model_name: ExtractorModelType,
-    image: ndarray,
-    page_ocr: PageInfo,
-) -> List[InferenceBoundingBox]:
-    (
-        box_classifier_model,
-        layoutlm_model,
-        processor,
-        training_config,
-        extraction_id2label,
-        classification_id2label,
-    ) = extractor_models[model_name]
-
-    results = predict_with_model(
-        layoutlm_model,
-        processor,
-        training_config,
-        extraction_id2label,
-        classification_id2label,
-        [Image.fromarray(image)],
-        {"pages": [page_ocr]},
-        box_classifier_model,
-    )
-
-    return results["boundingBoxes"]
-
-    # return process_extraction_page(
-    #     results["boundingBoxes"],
-    #     page_ocr,
-    #     fields,
-    #     mergeable_fields,
-    #     tables,
-    # )

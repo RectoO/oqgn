@@ -9,7 +9,7 @@ accept-no-yields-doc = no
 default-docstring-type = numpy
 
 [FORMAT]
-max-line-length = 100
+max-line-length = 120
 
 [MESSAGES CONTROL]
-disable = C0411, C0114, C0115, C0116, W9011, W9012, W0102
+disable = C0411, C0114, C0115, C0116, W9011, W9012, W0102, W0718

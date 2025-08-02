@@ -1,8 +1,10 @@
-from typing import List
+from typing import List, Tuple
 from numpy import ndarray
+import numpy as np
 import torch
 from doctr.models import ocr_predictor, fast_base, crnn_vgg16_bn
 from doctr.io import DocumentFile
+
 from src.types.ocr import Ocr, PageInfo, BoundingBox
 
 
@@ -99,15 +101,58 @@ def transform_doctr_ocr(doctr_ocr) -> Ocr:
                 line_index += 1
             block_index += 1
 
+        all_confidences = [bounding_box["confidence"] for bounding_box in page_bounding_boxes]
+        mean_confidence = sum(all_confidences) / len(all_confidences) if len(all_confidences) > 0 else 0
         return {
             "width": width,
             "height": height,
             "boundingBoxes": page_bounding_boxes,
+            "confidence": mean_confidence,
         }
 
     return {
         "pages": [process_page(page, i) for i, page in enumerate(doctr_ocr["pages"])]
     }
+
+def rotate_image(image: ndarray, angle: int):
+    if angle == 0:
+        return image
+    elif angle == 90:
+        return np.rot90(image, k=3)  # 90° clockwise = 270° counter-clockwise
+    elif angle == 180:
+        return np.rot90(image, k=2)
+    elif angle == 270:
+        return np.rot90(image, k=1)
+    else:
+        raise ValueError("Angle must be one of 0, 90, 180, or 270 degrees")
+
+def ocr_image(image: ndarray) -> PageInfo:
+    result = model([image])
+    raw_result = result.export()
+    ocr_result = transform_doctr_ocr(raw_result)
+    return ocr_result["pages"][0]
+
+def detect_orientation(image: ndarray, page_ocr: PageInfo) -> Tuple[PageInfo, int]:
+    page_ocr_0 = page_ocr
+    page_ocr_90 = ocr_image(rotate_image(image, 90))
+    page_ocr_180 = ocr_image(rotate_image(image, 180))
+    page_ocr_270 = ocr_image(rotate_image(image, 270))
+
+    c0 = page_ocr_0["confidence"]
+    c90 = page_ocr_90["confidence"]
+    c180 = page_ocr_180["confidence"]
+    c270 = page_ocr_270["confidence"]
+
+    if c0 > c90 and c0 > c180 and c0 > c270:
+        return page_ocr_0, 0
+    elif c90 > c0 and c90 > c180 and c90 > c270:
+        return page_ocr_90, 90
+    elif c180 > c0 and c180 > c90 and c180 > c270:
+        return page_ocr_180, 180
+    elif c270 > c0 and c270 > c90 and c270 > c180:
+        return page_ocr_270, 270
+
+    return page_ocr, 0
 
 
 def get_images(file_bytes, mime_type):
@@ -119,7 +164,7 @@ def get_images(file_bytes, mime_type):
     return doc
 
 
-def ocr_images(images: List[ndarray]):
+def ocr_images(images: List[ndarray]) -> Ocr:
     result = model(images)
 
     raw_result = result.export()

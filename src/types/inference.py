@@ -1,4 +1,5 @@
 from typing import TypedDict, Dict, List
+
 from src.types.ocr import BoundingBoxCoordinates
 
 

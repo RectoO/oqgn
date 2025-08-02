@@ -2,18 +2,12 @@ import shutil
 import os
 import traceback
 import time
-import json
 
 from src.constants import (
-    CONFIG_FILE,
     ERROR_FOLDER,
     INPUT_FOLDER,
-    OUTPUT_FOLDER,
-    PROCESSED_INPUT_FOLDER,
-    TAG_DEFAULT_VALUES_FILE,
 )
-from src.process.format import csv_output
-from src.process.main import process_file
+from src.process_file import process_file
 
 
 def wait_for_file_completion(file_path, check_interval=1, max_attempts=10):
@@ -23,7 +17,6 @@ def wait_for_file_completion(file_path, check_interval=1, max_attempts=10):
     while attempts < max_attempts:
         current_size = os.path.getsize(file_path)
         if current_size == previous_size:
-            # print("attempts", attempts, flush=True)
             return True  # File is stable (done writing)
         previous_size = current_size
         attempts += 1
@@ -33,13 +26,6 @@ def wait_for_file_completion(file_path, check_interval=1, max_attempts=10):
         f"File {file_path} did not stabilize after {max_attempts} attempts.", flush=True
     )
     return False
-
-
-with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-    config = json.load(f)
-
-with open(TAG_DEFAULT_VALUES_FILE, "r", encoding="utf-8") as f:
-    tag_default_values = json.load(f)
 
 
 def main():
@@ -64,21 +50,8 @@ def main():
 
             if wait_for_file_completion(first_added_file_path):
                 try:
-                    response = process_file(file_path, config, tag_default_values)
-
-                    # Save response
-                    response_output_path = os.path.join(
-                        OUTPUT_FOLDER, f"{file_name}-output.csv"
-                    )
-                    csv_output(response, response_output_path)
-                    # with open(response_output_path, "w", encoding="utf-8") as f:
-                    #     json.dump(response, f)
-
-                    # Clean up
-                    processed_input_path = os.path.join(
-                        PROCESSED_INPUT_FOLDER, file_name
-                    )
-                    shutil.move(file_path, processed_input_path)
+                    # Process file
+                    process_file(file_path, file_name)
 
                     print(f"File processed: {file_name}", flush=True)
                 except Exception as e:

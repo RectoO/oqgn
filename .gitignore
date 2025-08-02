@@ -5,7 +5,7 @@ __pycache__/
 **/*.pyc
 *$py.class
 
-models
+models/skwiz
 
 workspace/error/*
 !workspace/error/.gitkeep
@@ -15,6 +15,5 @@ workspace/input_processed/*
 !workspace/input_processed/.gitkeep
 workspace/output/*
 !workspace/output/.gitkeep
-workspace2/
 
 

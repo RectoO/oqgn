@@ -17,9 +17,6 @@ RUN mkdir $HUGGINGFACE_CACHE_DIR
 # Install
 RUN apt-get update && \
     apt-get install -y \
-    tesseract-ocr \
-    libtesseract-dev \
-    libleptonica-dev \
     libmagic1 \
     build-essential \
     cmake \
@@ -47,6 +44,7 @@ COPY ./src /var/www/src
 RUN mkdir /var/www/models
 COPY ./models/ocr /var/www/models/ocr
 RUN mkdir /var/www/models/skwiz
+RUN mkdir /var/www/tmp
 
 RUN python -m src.skwiz.download_base_layoutlm_models
 RUN chmod -R 0777 $HUGGINGFACE_CACHE_DIR

@@ -1,5 +1,6 @@
+from typing import List
+
 from src.types.training import LayoutLMArchitectureSchema
-from typing import Dict, Any, List, TypedDict
 
 
 # Extended type that allows additional fields beyond LayoutLMArchitectureSchema

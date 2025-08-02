@@ -1,3 +1,8 @@
+from copy import deepcopy
+from typing import Dict
+import torch
+from transformers import LayoutLMv3Config, LayoutLMv3Model  # type: ignore[import-untyped]
+
 from src.types.training import TrainingConfig
 from src.skwiz.layoutlm.default_layoutlm_config import DEFAULT_LAYOUTLM_CONFIG
 from src.skwiz.layoutlm.layoutlmv3_classification_head import (
@@ -6,13 +11,6 @@ from src.skwiz.layoutlm.layoutlmv3_classification_head import (
 from src.skwiz.layoutlm.layoutlmv3_and_features_head_classification import (
     LayoutLMv3AndFeaturesHeadClassification,
 )
-from copy import deepcopy
-from typing import Dict
-
-import torch
-
-
-from transformers import LayoutLMv3Config, LayoutLMv3Model  # type: ignore[import-untyped]
 
 
 class LayoutLMv3AndFeaturesClassification(torch.nn.Module):
