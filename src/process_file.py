@@ -16,6 +16,7 @@ accepted_mime_types = [
     "image/png",
 ]
 
+
 def process_file(file_path: str, file_name: str):
     # Read file
     file_bytes, mime_type = read_file(file_path)
@@ -31,13 +32,10 @@ def process_file(file_path: str, file_name: str):
     # Save response
     csv_output_tmp_move(file_name, classification, date, extracted_data)
 
-    # DEBUG ONLY
-    # shutil.copy(file_path, os.path.join(PROCESSED_INPUT_FOLDER, file_name))
-
     # Clean up
-    date_year = date.split('-')[0]
+    date_year = date.split("-")[0]
     client_folder = f"{classification}_{date_year}"
-    formatted_date = "".join(date.split('-'))
+    formatted_date = "".join(date.split("-"))
     processed_file_name = f"{classification}_{formatted_date}_{file_name}"
     processed_input_path = os.path.join(
         PROCESSED_INPUT_FOLDER, client_folder, processed_file_name
@@ -74,6 +72,10 @@ def analyse_file(file_bytes: bytes, mime_type: str):
         image=images[0],
         page_ocr=first_page_ocr,
     )
-    classification = process_classification_page(classified_page) if classified_page is not None else None
+    classification = (
+        process_classification_page(classified_page)
+        if classified_page is not None
+        else None
+    )
 
     return classification, images, first_page_ocr

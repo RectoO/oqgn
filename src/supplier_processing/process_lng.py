@@ -2,7 +2,12 @@ from typing import Dict, List
 from numpy import ndarray
 
 from src.ocr.main import ocr_images
-from src.utils import FormatConfig, extract_fields, format_csv_output, process_classification_page
+from src.utils import (
+    FormatConfig,
+    extract_fields,
+    format_csv_output,
+    process_classification_page,
+)
 from src.skwiz_models import classify_page
 from src.types.ocr import PageInfo
 
@@ -35,7 +40,11 @@ def process_lng(
             image=image,
             page_ocr=ocr_page,
         )
-        classification = process_classification_page(classified_page) if classified_page is not None else None
+        classification = (
+            process_classification_page(classified_page)
+            if classified_page is not None
+            else None
+        )
         if classification != "GP flow":
             # We skip pages that are not GP flow
             continue
@@ -55,5 +64,8 @@ def process_lng(
         csv_data = format_csv_output(field_mapping, extracted_fields, timestamp)
 
         csv_output += csv_data[1:]
+
+    if len(timestamps) == 0:
+        raise ValueError(f"No timestamp found for LNG on any pages")
 
     return (min(timestamps), csv_output)

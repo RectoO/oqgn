@@ -2,6 +2,7 @@ services:
   instance:
     network_mode: 'none'
     build: .
+    # image: oqgn-instance:latest
     command: python -m src.app
     deploy:
       resources:
