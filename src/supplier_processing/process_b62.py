@@ -96,10 +96,13 @@ def process_b62(
 
 
     timestamp = right_extracted_fields.get("date", {}).get("value", None)
-    if timestamp is None:
+    if timestamp is None or not isinstance(timestamp, str):
         raise ValueError("No timestamp found for B62")
 
     left_csv_output = format_csv_output(fc1_fields_mapping, left_extracted_fields, timestamp)
     right_csv_output = format_csv_output(fc2_fields_mapping, right_extracted_fields, timestamp)
 
-    return (timestamp, left_csv_output + right_csv_output[1:])
+    # Always 2 page (left and right)
+    page_count = 2
+
+    return (timestamp, left_csv_output + right_csv_output[1:], page_count)

@@ -63,11 +63,14 @@ def process_bpg(
                     output_by_date[timestamp][field_name] = field_data
 
     csv_output = format_csv_output({}, {}, "")
-    timestamps = []
+    timestamps: List[str] = []
     for timestamp, extracted_fields in output_by_date.items():
         timestamps.append(timestamp)
         csv_data = format_csv_output(field_mapping, extracted_fields, timestamp)
         csv_output += csv_data[1:]
 
-    return (min(timestamps), csv_output)
+    # All page are processed
+    page_count = len(images)
+
+    return (min(timestamps), csv_output, page_count)
 

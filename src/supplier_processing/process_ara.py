@@ -44,8 +44,11 @@ def process_ara(
         mergeable_fields=[],
     )
 
-    timestamp = extracted_fields.get("date", {}).get("value", None)
-    if timestamp is None:
+    timestamp: str | None = extracted_fields.get("date", {}).get("value", None)
+    if timestamp is None or not isinstance(timestamp, str):
         raise ValueError("No timestamp found for ARA")
 
-    return (timestamp, format_csv_output(field_mapping, extracted_fields, timestamp))
+    # We only process the first page
+    page_count = 1
+
+    return (timestamp, format_csv_output(field_mapping, extracted_fields, timestamp), page_count)

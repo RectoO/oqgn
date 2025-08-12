@@ -40,7 +40,7 @@ def process_bpk(
         ocr_pages.extend(rest_ocr["pages"])
 
     csv_output = format_csv_output({}, {}, "")
-    timestamps = []
+    timestamps: List[str] = []
     for i, (image, ocr_page) in enumerate(zip(images, ocr_pages)):
         extracted_fields = extract_fields(
             model_name="extractor-oqgn",
@@ -58,5 +58,8 @@ def process_bpk(
 
         csv_output += csv_data[1:]
 
-    return (min(timestamps), csv_output)
+    # All page are processed
+    page_count = len(images)
+
+    return (min(timestamps), csv_output, page_count)
 

@@ -1,6 +1,6 @@
 import json
 
-from src.constants import CONFIG_FILE, TAG_DEFAULT_VALUES_FILE
+from src.constants import CONFIG_FILE
 from src.supplier_processing.process_ara import process_ara
 from src.supplier_processing.process_b62 import process_b62
 from src.supplier_processing.process_bpg import process_bpg
@@ -9,14 +9,12 @@ from src.supplier_processing.process_del import process_del
 from src.supplier_processing.process_lng import process_lng
 from src.supplier_processing.process_ooc import process_ooc
 from src.supplier_processing.process_oxs import process_oxs
-from src.utils import update_tag_default_values
+from src.types.config import Config
+from src.utils import update_day_offsets, update_tag_default_values
 
 
 with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-    config = json.load(f)
-
-with open(TAG_DEFAULT_VALUES_FILE, "r", encoding="utf-8") as f:
-    tag_default_values = json.load(f)
+    config: Config = json.load(f)
 
 def supplier_processing(classification, images, first_page_ocr):
       # Process file
@@ -51,7 +49,12 @@ def supplier_processing(classification, images, first_page_ocr):
     else:
         raise ValueError(f"Unsupported classification: {classification}")
 
-    (date, extracted_data) = response
-    updated_extracted_data = update_tag_default_values(extracted_data, tag_default_values)
+    (date, extracted_data, page_count) = response
 
-    return (date, updated_extracted_data)
+    # Update day offsets
+    (date, extracted_data) = update_day_offsets(date, extracted_data, config["day_offsets"][classification])
+
+    # Update default values
+    updated_extracted_data = update_tag_default_values(extracted_data, config["default_values"])
+
+    return (date, updated_extracted_data, page_count)

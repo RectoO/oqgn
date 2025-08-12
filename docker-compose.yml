@@ -13,8 +13,8 @@ services:
           cpus: '1'
           memory: 8G
     volumes:
+      - ./counter.db:/var/www/counter.db
       - ./config.json:/var/www/config.json
-      - ./tag_default_values.json:/var/www/tag_default_values.json
       - ./src:/var/www/src
       - ./models:/var/www/models
       - ./workspace/input:/var/www/input

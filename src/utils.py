@@ -3,6 +3,7 @@ import re
 import csv
 import shutil
 import dateutil.parser as date_parser
+from datetime import datetime, timedelta
 from typing import Any, Dict, Callable, List, Tuple, TypedDict, Literal
 from numpy import ndarray
 
@@ -449,11 +450,10 @@ def update_tag_default_values(csv_data, tag_default_values):
         *[
             (
                 [
-                    row[0],
-                    row[1],
-                    tag_default_values.get(row[1], row[2]),
-                    row[3],
-                    row[4],
+                    row[0], # timestamp
+                    row[1], # tag name
+                    tag_default_values.get(row[1], row[2]), # Value
+                    *row[3:] # ...rest of the row
                 ]
                 if row[3] == "NoData"
                 else row
@@ -461,6 +461,32 @@ def update_tag_default_values(csv_data, tag_default_values):
             for row in csv_data[1:]
         ],
     ]
+
+def add_days(date_str: str, offset: int):
+    # Parse the input date string
+    date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+    # Add the offset
+    new_date = date_obj + timedelta(days=offset)
+    # Return in the same format
+    return new_date.strftime("%Y-%m-%d")
+
+
+def update_day_offsets(date: str, extracted_data: list[list[str]], day_offset: int):
+    new_date = add_days(date, day_offset)
+
+    header = extracted_data[0]
+    new_extracted_data = [
+        header,
+        *[
+                [
+                    add_days(row[0], day_offset),
+                    *row[1:]
+                ]
+            for row in extracted_data[1:]
+        ],
+    ]
+
+    return (new_date, new_extracted_data)
 
 
 def csv_output(output_data: List[List[str]], output_name: str):

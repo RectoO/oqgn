@@ -2,6 +2,7 @@ import os
 import shutil
 import magic
 
+from src.counter import increment, init_db
 from src.supplier_processing.main import supplier_processing
 from src.constants import PROCESSED_INPUT_FOLDER
 from src.ocr.main import detect_orientation, get_images, ocr_images, rotate_image
@@ -16,6 +17,7 @@ accepted_mime_types = [
     "image/png",
 ]
 
+init_db()
 
 def process_file(file_path: str, file_name: str):
     # Read file
@@ -27,7 +29,10 @@ def process_file(file_path: str, file_name: str):
     classification, images, first_page_ocr = analyse_file(file_bytes, mime_type)
 
     # Supplier processing
-    (date, extracted_data) = supplier_processing(classification, images, first_page_ocr)
+    (date, extracted_data, page_count) = supplier_processing(classification, images, first_page_ocr)
+
+    # Increment counter
+    increment(page_count)
 
     # Save response
     csv_output_tmp_move(file_name, classification, date, extracted_data)
@@ -43,7 +48,6 @@ def process_file(file_path: str, file_name: str):
     # Create output folder if it doesn't exist
     os.makedirs(os.path.dirname(processed_input_path), exist_ok=True)
     shutil.move(file_path, processed_input_path)
-
 
 def read_file(file_path: str):
     # Read file

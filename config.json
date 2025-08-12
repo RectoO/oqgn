@@ -209,5 +209,48 @@
         "densityStd": "OOC_TKT_S2_DENS_SC"
       }
     }
+  },
+  "default_values": {
+    "ARA_TKT_FC1_GROSS": 0,
+    "ARA_TKT_FC1_NET": 0,
+    "ARA_TKT_FC1_ENERGY": 0,
+    "B62_TKT_FC1_GROSS": 0,
+    "B62_TKT_FC1_NET": 0,
+    "B62_TKT_FC1_ENERGY": 0,
+    "B62_TKT_FC2_GROSS": 0,
+    "B62_TKT_FC2_NET": 0,
+    "B62_TKT_FC2_ENERGY": 0,
+    "BPG_TKT_FC1_GROSS": 0,
+    "BPG_TKT_FC1_NET": 0,
+    "BPG_TKT_FC1_ENERGY": 0,
+    "BPK_TKT_FC1_GROSS": 0,
+    "BPK_TKT_FC1_NET": 0,
+    "BPK_TKT_FC1_ENERGY": 0,
+    "DEL_TKT_FC1_ENERGY": 0,
+    "DEL_TKT_FC1_NET": 0,
+    "LNG_TKT_FC1_NET": 0,
+    "LNG_TKT_FC1_ENERGY": 0,
+    "OXS_TKT_S1_GROSS": 0,
+    "OXS_TKT_S1_NET": 0,
+    "OXS_TKT_S1_ENERGY": 0,
+    "OXS_TKT_S2_GROSS": 0,
+    "OXS_TKT_S2_NET": 0,
+    "OXS_TKT_S2_ENERGY": 0,
+    "OOC_TKT_S1_GROSS": 0,
+    "OOC_TKT_S1_NET": 0,
+    "OOC_TKT_S1_ENERGY": 0,
+    "OOC_TKT_S2_GROSS": 0,
+    "OOC_TKT_S2_NET": 0,
+    "OOC_TKT_S2_ENERGY": 0
+  },
+  "day_offsets": {
+    "ARA": -1,
+    "B62": -1,
+    "BPG": -1,
+    "BPK": -1,
+    "DEL": 0,
+    "LNG": -1,
+    "OXS": -1,
+    "OOC": 0
   }
 }

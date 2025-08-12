@@ -25,6 +25,9 @@ def process_del(
     if len(images) != 1:
         raise ValueError("Expected 1 page for DEL classification")
 
+    # Always 1 page
+    page_count = 1
+
     csv_output = format_csv_output({}, {}, "")
 
     extracted_page = extract_page("extractor-oqgn-tables-del", images[0], page_ocr)
@@ -92,4 +95,5 @@ def process_del(
 
     start_of_month = date_month.replace(day=1)
     timestamp = start_of_month.strftime("%Y-%m-%d")
-    return (timestamp, csv_output)
+
+    return (timestamp, csv_output, page_count)

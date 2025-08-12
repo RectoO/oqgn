@@ -32,7 +32,7 @@ def process_lng(
         ocr_pages.extend(rest_ocr["pages"])
 
     csv_output = format_csv_output({}, {}, "")
-    timestamps = []
+    timestamps: List[str] = []
     for i, (image, ocr_page) in enumerate(zip(images, ocr_pages)):
         # Classify page
         classified_page = classify_page(
@@ -66,6 +66,9 @@ def process_lng(
         csv_output += csv_data[1:]
 
     if len(timestamps) == 0:
-        raise ValueError(f"No timestamp found for LNG on any pages")
+        raise ValueError("No timestamp found for LNG on any pages")
 
-    return (min(timestamps), csv_output)
+    # All page are processed
+    page_count = len(images)
+
+    return (min(timestamps), csv_output, page_count)
