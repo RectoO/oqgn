@@ -2,7 +2,13 @@ from typing import Dict, List
 from datetime import datetime
 from numpy import ndarray
 
-from src.utils import FormatConfig, format_bbs, format_csv_output, process_extraction_page, process_table_lines
+from src.utils import (
+    FormatConfig,
+    format_bbs,
+    format_csv_output,
+    process_extraction_page,
+    process_table_lines,
+)
 from src.skwiz_models import extract_page
 from src.types.ocr import PageInfo
 
@@ -35,7 +41,7 @@ def process_del(
         extracted_page,
         page_ocr,
         fields=[f for f in fields_format],
-        mergeable_fields=["date"],
+        unmergeable_fields=[],
         tables=[
             {
                 "table": "lineItems",

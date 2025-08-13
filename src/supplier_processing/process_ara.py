@@ -41,7 +41,7 @@ def process_ara(
         image=images[0],
         page_ocr=page_ocr,
         fields_format=fields_format,
-        mergeable_fields=[],
+        unmergeable_fields=[],
     )
 
     timestamp: str | None = extracted_fields.get("date", {}).get("value", None)
@@ -51,4 +51,8 @@ def process_ara(
     # We only process the first page
     page_count = 1
 
-    return (timestamp, format_csv_output(field_mapping, extracted_fields, timestamp), page_count)
+    return (
+        timestamp,
+        format_csv_output(field_mapping, extracted_fields, timestamp),
+        page_count,
+    )

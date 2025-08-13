@@ -82,7 +82,7 @@ def process_b62(
         image=left_half,
         page_ocr=left_ocr_page,
         fields_format=left_fields_format,
-        mergeable_fields=[],
+        unmergeable_fields=[],
     )
 
     # Right
@@ -91,16 +91,19 @@ def process_b62(
         image=right_half,
         page_ocr=right_ocr_page,
         fields_format=right_fields_format,
-        mergeable_fields=[],
+        unmergeable_fields=[],
     )
-
 
     timestamp = right_extracted_fields.get("date", {}).get("value", None)
     if timestamp is None or not isinstance(timestamp, str):
         raise ValueError("No timestamp found for B62")
 
-    left_csv_output = format_csv_output(fc1_fields_mapping, left_extracted_fields, timestamp)
-    right_csv_output = format_csv_output(fc2_fields_mapping, right_extracted_fields, timestamp)
+    left_csv_output = format_csv_output(
+        fc1_fields_mapping, left_extracted_fields, timestamp
+    )
+    right_csv_output = format_csv_output(
+        fc2_fields_mapping, right_extracted_fields, timestamp
+    )
 
     # Always 2 page (left and right)
     page_count = 2

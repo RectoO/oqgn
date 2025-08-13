@@ -49,7 +49,7 @@ def process_ooc(
             image=image,
             page_ocr=ocr_page,
             fields_format=fields_format,
-            mergeable_fields=["name"],
+            unmergeable_fields=[],
         )
         timestamp = extracted_fields.get("date", {}).get("value", None)
         if timestamp is None:
@@ -66,11 +66,15 @@ def process_ooc(
         else:
             for field_name, field_data in extracted_fields.items():
                 current_confidence = (
-                    output_by_date_stream[(timestamp, stream_type)].get(field_name, {}).get("confidence", 0)
+                    output_by_date_stream[(timestamp, stream_type)]
+                    .get(field_name, {})
+                    .get("confidence", 0)
                 )
                 new_confidence = field_data.get("confidence", 0)
                 if new_confidence > current_confidence:
-                    output_by_date_stream[(timestamp, stream_type)][field_name] = field_data
+                    output_by_date_stream[(timestamp, stream_type)][
+                        field_name
+                    ] = field_data
 
     timestamps: List[str] = []
     csv_output = format_csv_output({}, {}, "")
@@ -86,4 +90,3 @@ def process_ooc(
     page_count = len(images)
 
     return (min(timestamps), csv_output, page_count)
-

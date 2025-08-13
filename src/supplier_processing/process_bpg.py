@@ -30,6 +30,7 @@ fields_format: Dict[str, FormatConfig] = {
     "co2": {"type": "number"},
 }
 
+
 def process_bpg(
     images: List[ndarray], first_page_ocr: PageInfo, field_mapping: Dict[str, str]
 ):
@@ -45,7 +46,7 @@ def process_bpg(
             image=image,
             page_ocr=ocr_page,
             fields_format=fields_format,
-            mergeable_fields=[],
+            unmergeable_fields=[],
         )
         timestamp = extracted_fields.get("date", {}).get("value", None)
         if timestamp is None:
@@ -73,4 +74,3 @@ def process_bpg(
     page_count = len(images)
 
     return (min(timestamps), csv_output, page_count)
-

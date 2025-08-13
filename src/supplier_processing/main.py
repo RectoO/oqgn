@@ -16,8 +16,9 @@ from src.utils import update_day_offsets, update_tag_default_values
 with open(CONFIG_FILE, "r", encoding="utf-8") as f:
     config: Config = json.load(f)
 
+
 def supplier_processing(classification, images, first_page_ocr):
-      # Process file
+    # Process file
     if classification == "B62":
         response = process_b62(
             images, config["mapping"]["B62"]["fc1"], config["mapping"]["B62"]["fc2"]
@@ -52,9 +53,13 @@ def supplier_processing(classification, images, first_page_ocr):
     (date, extracted_data, page_count) = response
 
     # Update day offsets
-    (date, extracted_data) = update_day_offsets(date, extracted_data, config["day_offsets"][classification])
+    (date, extracted_data) = update_day_offsets(
+        date, extracted_data, config["day_offsets"][classification]
+    )
 
     # Update default values
-    updated_extracted_data = update_tag_default_values(extracted_data, config["default_values"])
+    updated_extracted_data = update_tag_default_values(
+        extracted_data, config["default_values"]
+    )
 
     return (date, updated_extracted_data, page_count)

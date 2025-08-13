@@ -1,24 +1,31 @@
 import time
+import os
 import sqlite3
 
 from src.constants import DB_PATH
 
 
 def init_db():
-    print(f"Initializing database at {DB_PATH}", flush=True)
+    if not os.path.isfile(DB_PATH):
+        raise AssertionError("Missing counter db")
+
+    print("Initializing counter database", flush=True)
     conn = sqlite3.connect(DB_PATH, timeout=30)
     conn.execute("PRAGMA journal_mode=WAL;")
     conn.execute("PRAGMA synchronous=FULL;")
-    conn.execute("""
+    conn.execute(
+        """
         CREATE TABLE IF NOT EXISTS ledger (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             ts INTEGER NOT NULL,
             delta INTEGER NOT NULL,
             cumulative INTEGER NOT NULL
         );
-    """)
+    """
+    )
     conn.commit()
     conn.close()
+
 
 def increment(delta):
     ts = int(time.time())
@@ -28,10 +35,14 @@ def increment(delta):
     row = cur.fetchone()
     last_total = row[0] if row else 0
     total = last_total + delta
-    conn.execute("INSERT INTO ledger (ts, delta, cumulative) VALUES (?, ?, ?)", (ts, delta, total))
+    conn.execute(
+        "INSERT INTO ledger (ts, delta, cumulative) VALUES (?, ?, ?)",
+        (ts, delta, total),
+    )
     conn.commit()
     conn.close()
     return total
+
 
 def get_total():
     conn = sqlite3.connect(DB_PATH, timeout=30)

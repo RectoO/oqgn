@@ -37,7 +37,6 @@ class FormatTextConfig(TypedDict):
 FormatConfig = FormatDateConfig | FormatNumberConfig | FormatTextConfig
 
 
-
 def get_max_key(data: Dict[str, float]) -> str:
     key_func: Callable[[str], float] = lambda k: data[k]
     return max(data, key=key_func)
@@ -99,7 +98,7 @@ class FieldBoundingBox(TypedDict):
 
 
 def can_merge_bbs(
-    mergeable_fields: List[str],
+    unmergeable_fields: List[str],
     current_bbs: List[FieldBoundingBox],
     bb2: FieldBoundingBox,
     field: str,
@@ -109,10 +108,13 @@ def can_merge_bbs(
     if len(current_bbs) == 0:
         return True
 
-    if field not in mergeable_fields:
+    if field in unmergeable_fields:
         return False
 
     if current_bbs[0]["lineNumber"] != bb2["lineNumber"]:
+        return False
+
+    if bb2["confidence"] < THRESHOLD_TO_MERGE:
         return False
 
     bbs_coordinates = surrounding_bb([bb["coordinates"] for bb in current_bbs + [bb2]])
@@ -146,7 +148,7 @@ def process_extraction_page(
     bounding_boxes: List[InferenceBoundingBox],
     page_ocr: PageInfo,
     fields: List[str],
-    mergeable_fields: List[str],
+    unmergeable_fields: List[str],
     tables: List[TablesConfig],
 ) -> ExtractionPage:
     # Merge ocr and predictions
@@ -207,7 +209,7 @@ def process_extraction_page(
 
         prediction = bb["prediction"]
         if can_merge_bbs(
-            mergeable_fields,
+            unmergeable_fields,
             field_preds[prediction],
             bb,
             prediction,
@@ -294,7 +296,6 @@ def process_table_lines(
         lines.append(line_pred)
 
     return lines
-
 
 
 def format_number(raw_text: str) -> float | None:
@@ -450,10 +451,10 @@ def update_tag_default_values(csv_data, tag_default_values):
         *[
             (
                 [
-                    row[0], # timestamp
-                    row[1], # tag name
-                    tag_default_values.get(row[1], row[2]), # Value
-                    *row[3:] # ...rest of the row
+                    row[0],  # timestamp
+                    row[1],  # tag name
+                    tag_default_values.get(row[1], row[2]),  # Value
+                    *row[3:],  # ...rest of the row
                 ]
                 if row[3] == "NoData"
                 else row
@@ -461,6 +462,7 @@ def update_tag_default_values(csv_data, tag_default_values):
             for row in csv_data[1:]
         ],
     ]
+
 
 def add_days(date_str: str, offset: int):
     # Parse the input date string
@@ -477,13 +479,7 @@ def update_day_offsets(date: str, extracted_data: list[list[str]], day_offset: i
     header = extracted_data[0]
     new_extracted_data = [
         header,
-        *[
-                [
-                    add_days(row[0], day_offset),
-                    *row[1:]
-                ]
-            for row in extracted_data[1:]
-        ],
+        *[[add_days(row[0], day_offset), *row[1:]] for row in extracted_data[1:]],
     ]
 
     return (new_date, new_extracted_data)
@@ -503,8 +499,8 @@ def csv_output_tmp_move(
     data: List[List[str]],
 ):
     # Output file name
-    base_file_name = ".".join(original_file_name.split('.')[:-1])
-    formatted_date = "".join(date.split('-'))
+    base_file_name = ".".join(original_file_name.split(".")[:-1])
+    formatted_date = "".join(date.split("-"))
     output_file_name = f"{classification}_{formatted_date}_{base_file_name}.csv"
     # Create tmp file
     tmp_file_path = os.path.join(TMP_FOLDER, output_file_name)
@@ -523,14 +519,14 @@ def extract_fields(
     image: ndarray,
     page_ocr: PageInfo,
     fields_format: Dict[str, FormatConfig],
-    mergeable_fields: List[str],
+    unmergeable_fields: List[str],
 ):
     extracted_page = extract_page(model_name, image, page_ocr)
     processed_extracted_page = process_extraction_page(
         extracted_page,
         page_ocr,
         fields=[f for f in fields_format],
-        mergeable_fields=mergeable_fields,
+        unmergeable_fields=unmergeable_fields,
         tables=[],
     )
 

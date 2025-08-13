@@ -47,7 +47,7 @@ def process_bpk(
             image=image,
             page_ocr=ocr_page,
             fields_format=fields_format,
-            mergeable_fields=["name"],
+            unmergeable_fields=[],
         )
         timestamp = extracted_fields.get("date", {}).get("value", None)
         if timestamp is None:
@@ -62,4 +62,3 @@ def process_bpk(
     page_count = len(images)
 
     return (min(timestamps), csv_output, page_count)
-
