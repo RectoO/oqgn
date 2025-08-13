@@ -3,6 +3,11 @@ import os
 import traceback
 import time
 
+from src.counter import init_db
+
+# Init Ledget database
+init_db()
+
 from src.constants import (
     ERROR_FOLDER,
     INPUT_FOLDER,
@@ -62,7 +67,7 @@ def main():
                 except Exception as e:
                     print(f"Error with file: {file_name}", flush=True)
                     print(e)
-                    print('-', flush=True)
+                    print("-", flush=True)
                     error_file_output_path = os.path.join(ERROR_FOLDER, file_name)
                     shutil.move(file_path, error_file_output_path)
                     error_msg_output_path = os.path.join(
